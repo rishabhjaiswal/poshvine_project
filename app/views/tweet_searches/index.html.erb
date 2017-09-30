@@ -1,0 +1,74 @@
+<h1>Twitter Searches</h1>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<div class="form col-sm-12">
+  <h2>Enter Your Search Tag without # </h2>
+  <input type="text" id="inputHashtag" class="form-control" placeholder="searchtag">
+  <input type="text" id="inputlocation" class="form-control" placeholder="search location">
+</div>
+<button class="btn-primary" onclick="search()">Search</button>
+<h2>Search Results</h2>
+<div class="w3-container" id="tweet_data">
+</div>
+
+
+<br>
+
+<script type="text/javascript">
+
+  function search(){
+
+  var search_keyword = $('#inputHashtag').val();
+  var search_location = $('#inputlocation').val();
+  //console.log(search_keyword,search_loaction)
+
+  $.ajax({
+    url: 'tweet_searches/search?search_keyword='+search_keyword,
+    type: 'GET',
+    dataType: 'json',
+    contentType: "application/html",
+    success: function(response) {
+      if (response.length > 0){
+       $.each(response, function(i, item) {
+        console.log(item)
+          if (item['entities']['urls'].length > 0){
+            if (!search_location){
+              if(item['extended_entities']!=undefined){
+                if(item['extended_entities']['media'][0]['type']=="video" ){
+                  for ( var i=0; i < item['extended_entities']['media'][0]['video_info']['variants'].length ; i++){
+                    if (item['extended_entities']['media'][0]['video_info']['variants'][i]['content_type']=="video/mp4"){
+                      var video_src = item['extended_entities']['media'][0]['video_info']['variants'][i]['url']
+                    }
+                  }
+                  $("#tweet_data").append("<div class='w3-card-4' style= 'width:30.5%'><video width='400' controls><source src=" +video_src+ " type='video/mp4'></source>Your browser does not support HTML5 video.</video><div class='w3-container w3-center'><p>"+ item.text+ "</p></div></div>" );
+                }
+              }               
+            } else {
+              if (item['user']['geo_enabled']){
+                console.log(item['place'])
+                if ( item['place']['name'] == search_location){
+                  if (item['extended_entities']!=undefined){
+                    if (item['extended_entities']['media'][0]['type']=="video" ){
+                      for ( var i=0; i < item['extended_entities']['media'][0]['video_info']['variants'].length ; i++){
+                        if (item['extended_entities']['media'][0]['video_info']['variants'][i]['content_type']=="video/mp4"){
+                          var video_src = item['extended_entities']['media'][0]['video_info']['variants'][i]['url']
+                        }
+                      }
+                      $("#tweet_data").append("<div class='w3-card-4' style= 'width:30.5%'><video width='400' controls><source src=" +video_src+ " type='video/mp4'></source>Your browser does not support HTML5 video.</video><div class='w3-container w3-center'><p>"+ item.text+ "</p></div></div>" );
+                    }
+                  }                  
+                }
+                                
+              }
+            } 
+          }
+       }); 
+      }
+    }
+
+  });
+  }
+</script>
+  
